@@ -29,8 +29,8 @@ def setup_db(app, database_path=database_path):
 class Plant(db.Model):
     __tablename__ = "plants"
 
-    id= Column(Integer, primary_key=True)
-    name=Column(String)
+    id = Column(Integer, primary_key=True)
+    name =Column(String)
     scientific_name = Column(String)
     is_poisonous = Column(Boolean)
     primary_color = Column(String)
