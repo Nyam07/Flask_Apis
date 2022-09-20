@@ -8,6 +8,17 @@ from models import setup_db, Book
 
 BOOKS_PER_SHELF = 8
 
+# METHOD TO PERFOR PAGINATION
+def paginate_books(request, selection):
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * BOOKS_PER_SHELF
+    end = start + BOOKS_PER_SHELF
+
+    books = [book.format() for book in selection]
+    current_books = books[start:end]
+
+    return current_books
+
 # @TODO: General Instructions
 #   - As you're creating endpoints, define them and then search for 'TODO' within the frontend to update the endpoints there.
 #     If you do not update the endpoints, the lab will not work - of no fault of your API code!
@@ -39,13 +50,26 @@ def create_app(test_config=None):
     #         Response body keys: 'success', 'books' and 'total_books'
     # TEST: When completed, the webpage will display books including title, author, and rating shown as stars
 
-    
+    @app.route('/books')
+    def retrieve_books():
+        all_books = Book.query.order_by(Book.id).all()
+        current_books = paginate_books(request, all_books)
+
+        if len(current_books) == 0:
+            abort(404)
+
+        return jsonify({
+            'success':True,
+            'books': current_books,
+            'total_books': len(all_books)
+        })
 
     # @TODO: Write a route that will update a single book's rating.
     #         It should only be able to update the rating, not the entire representation
     #         and should follow API design principles regarding method and route.
     #         Response body keys: 'success'
     # TEST: When completed, you will be able to click on stars to update a book's rating and it will persist after refresh
+
 
     # @TODO: Write a route that will delete a single book.
     #        Response body keys: 'success', 'deleted'(id of deleted book), 'books' and 'total_books'
