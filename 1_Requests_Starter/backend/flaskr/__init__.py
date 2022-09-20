@@ -43,6 +43,7 @@ def create_app(test_config=None):
         )
         return response
 
+
     # @TODO: Write a route that retrivies all books, paginated.
     #         You can use the constant above to paginate by eight books.
     #         If you decide to change the number of books per page,
@@ -63,6 +64,7 @@ def create_app(test_config=None):
             'books': current_books,
             'total_books': len(all_books)
         })
+
 
     # @TODO: Write a route that will update a single book's rating.
     #         It should only be able to update the rating, not the entire representation
@@ -97,6 +99,30 @@ def create_app(test_config=None):
     #        Response body keys: 'success', 'books' and 'total_books'
 
     # TEST: When completed, you will be able to delete a single book by clicking on the trashcan.
+
+    @app.route('/books/<int:book_id>', methods=['DELETE'])
+    def delete_book(book_id):
+
+        try:
+            book = Book.query.filter(Book.id == book_id).one_or_none()
+
+            if book is None:
+                abort(404)
+            
+            book.delete()
+            selection = Book.query.order_by(Book.id).all()
+            current_books = paginate_books(request, selection)
+
+            return jsonify({
+                'success':True,
+                'Deleted_book': book_id,
+                'books':current_books,
+                'total_books':len(Book.query.all())
+            })
+        
+        except Exception as e:
+            print(e)
+            abort(422)
 
     # @TODO: Write a route that create a new book.
     #        Response body keys: 'success', 'created'(id of created book), 'books' and 'total_books'
