@@ -42,6 +42,7 @@ def create_app(test_config=None):
         selection = Book.query.order_by(Book.id).all()
         current_books = paginate_books(request, selection)
 
+        print(current_books) 
         if len(current_books) == 0:
             abort(404)
 
@@ -108,26 +109,63 @@ def create_app(test_config=None):
         new_title = body.get("title", None)
         new_author = body.get("author", None)
         new_rating = body.get("rating", None)
+        search_term = body.get('search', None)
 
         try:
-            book = Book(title=new_title, author=new_author, rating=new_rating)
-            book.insert()
+            if search_term:
+                selection = Book.query.order_by(Book.id).filter(Book.title.ilike('%{}%'.format(search_term)))
+                current_books = paginate_books(request, selection)
 
-            selection = Book.query.order_by(Book.id).all()
-            current_books = paginate_books(request, selection)
+                return jsonify({
+                    'success':True,
+                    'books':current_books,
+                    'total_books':len(selection.all())
+                })
 
-            return jsonify(
-                {
-                    "success": True,
-                    "created": book.id,
-                    "books": current_books,
-                    "total_books": len(Book.query.all()),
-                }
-            )
+            else:
+                book = Book(title=new_title, author=new_author, rating=new_rating)
+                book.insert()
+
+                selection = Book.query.order_by(Book.id).all()
+                current_books = paginate_books(request, selection)
+
+                return jsonify(
+                    {
+                        "success": True,
+                        "created": book.id,
+                        "books": current_books,
+                        "total_books": len(Book.query.all()),
+                    }
+                )
 
         except:
             abort(422)
 
+
+    # @app.route('/books<str:title>', methods=['POST'])
+    # def search_books(title):
+    #     body = request.get_json()
+
+    #     search_title = body.get('search')
+
+    #     try:
+    #         book = Book.query.filter(Book.title == search_title).all()
+    #         current_books = paginate_books(request, book)
+
+    #         if book is not None:
+    #             return jsonify({
+    #                 'success': True,
+    #                 'books': current_books,
+    #                 'total_books': len(books)
+    #             })
+    #         else:
+    #             return jsonify({
+    #                 'success':True,
+    #                 'books': 0,
+    #                 'total_books': 0
+    #             })
+    #     except:
+    #         abort(422)
     # @TODO: Create a new endpoint or update a previous endpoint to handle searching for a team in the title
     #        the body argument is called 'search' coming from the frontend.
     #        If you use a different argument, make sure to update it in the frontend code.
