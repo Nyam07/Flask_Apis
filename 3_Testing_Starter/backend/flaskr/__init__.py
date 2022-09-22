@@ -45,6 +45,7 @@ def create_app(test_config=None):
         if len(current_books) == 0:
             abort(404)
 
+        print(current_books)
         return jsonify(
             {
                 "success": True,
@@ -98,7 +99,8 @@ def create_app(test_config=None):
                 }
             )
 
-        except:
+        except Exception as e:
+            # print(e)
             abort(422)
 
     @app.route("/books", methods=["POST"])
